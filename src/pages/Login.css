@@ -158,28 +158,69 @@
   position: absolute;
   left: 14px;
   color: #9ca3af;
-  transition: color 0.3s;
+  transition: all 0.3s ease; /* Transición suave para el color y escala */
 }
 
-/* INPUTS Y SELECTS */
+/* =========================================
+   INPUTS Y SELECTS (Indicadores Visuales)
+========================================= */
 .input-wrapper input,
 .input-wrapper select.select-input {
   width: 100%;
-  padding: 10px 14px 10px 40px;
+  /* 👇 Espacio extra a la derecha (45px) para que no choque con el contador 👇 */
+  padding: 10px 45px 10px 40px; 
   background-color: #f1f5f9;
   border: 2px solid transparent;
   border-radius: 10px;
   font-size: 13px;
   color: #1e293b;
   outline: none;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
 }
 
+/* 👇 ESTILO DEL NUEVO CONTADOR DE CARACTERES 👇 */
+.char-counter {
+  position: absolute;
+  right: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #94a3b8;
+  pointer-events: none; /* Evita que estorbe al hacer clic */
+  transition: color 0.3s ease;
+}
+
+.input-wrapper:focus-within .char-counter {
+  color: #64748b; /* Se oscurece un poco al escribir */
+}
+
+/* 👇 INDICADOR: Hover en los campos */
+.input-wrapper input:hover:not(:disabled),
+.input-wrapper select.select-input:hover:not(:disabled) {
+  border-color: #cbd5e1;
+  background-color: #f8fafc;
+}
+
+/* 👇 INDICADOR: Foco activo en el campo */
 .input-wrapper input:focus,
 .input-wrapper select.select-input:focus {
   background-color: #ffffff;
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* 👇 INDICADOR: Ícono resaltado al escribir */
+.input-wrapper:focus-within .input-icon {
+  color: #2563eb;
+  transform: scale(1.1);
+}
+
+/* 👇 INDICADOR: Estado deshabilitado (Cargando) */
+.input-wrapper input:disabled,
+.input-wrapper select.select-input:disabled {
+  background-color: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.8;
 }
 
 .input-wrapper select.select-input {

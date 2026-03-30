@@ -37,7 +37,18 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Solo pedimos Captcha si NO estamos en modo recuperación
+    // Validaciones extra manuales antes de enviar al servidor
+    if (viewMode === 'register') {
+      if (matricula.length !== 7 || isNaN(matricula)) {
+        setError('La matrícula debe contener exactamente 7 números.');
+        return;
+      }
+      if (nombreCompleto.trim().length < 3) {
+        setError('Por favor, ingresa un nombre válido.');
+        return;
+      }
+    }
+
     if (!captchaToken && viewMode !== 'forgot') {
       setError('Por favor, verifica que no eres un robot.');
       return;
@@ -46,24 +57,20 @@ export default function Login() {
     setLoading(true);
     setError('');
     setSuccessMsg('');
-    setMostrarReenviar(false); // Limpiamos el botón de reenviar por si acaso
+    setMostrarReenviar(false);
 
     try {
       if (viewMode === 'register') {
-        // ==========================================
-        // 1. FLUJO DE REGISTRO
-        // ==========================================
         await clienteApi.post('/Usuarios/registro', {
           matricula,
-          nombreCompleto,
-          correoInstitucional: correo,
+          nombreCompleto: nombreCompleto.trim(), // Limpiamos espacios extra
+          correoInstitucional: correo.trim(),
           rol,
           password
         });
 
         setSuccessMsg('Cuenta creada. Revisa tu correo electrónico para verificarla.');
         
-        // Limpiamos y regresamos a modo Login
         setMatricula('');
         setNombreCompleto('');
         setRol('');
@@ -72,29 +79,22 @@ export default function Login() {
         setViewMode('login'); 
         
       } else if (viewMode === 'login') {
-        // ==========================================
-        // 2. FLUJO DE LOGIN Y REDIRECCIÓN
-        // ==========================================
-        const response = await clienteApi.post('/Auth/login', { correo, password });
+        const response = await clienteApi.post('/Auth/login', { correo: correo.trim(), password });
         const { token, rol: userRol } = response.data;
 
         localStorage.setItem('userToken', token);
         localStorage.setItem('userRol', userRol);
         
-        // 👇 AQUÍ ESTÁ LA NUEVA REDIRECCIÓN INTELIGENTE 👇
         if (userRol === 'Estudiante') {
           navigate('/dashboard-estudiante');
         } else if (userRol === 'Staff') {
-          navigate('/dashboard-staff'); // Redirige al escáner del Staff
+          navigate('/dashboard-staff'); 
         } else {
-          navigate('/dashboard'); // Administrador (Dashboard general)
+          navigate('/dashboard'); 
         }
 
       } else if (viewMode === 'forgot') {
-        // ==========================================
-        // 3. FLUJO DE RECUPERACIÓN DE CONTRASEÑA
-        // ==========================================
-        await clienteApi.post('/Auth/solicitar-recuperacion', { correo });
+        await clienteApi.post('/Auth/solicitar-recuperacion', { correo: correo.trim() });
         
         setSuccessMsg('Si el correo está registrado, te enviamos un enlace de recuperación. Revisa tu bandeja de entrada.');
         setPassword(''); 
@@ -105,7 +105,6 @@ export default function Login() {
       const mensajeError = err.response?.data?.mensaje || err.response?.data?.error || 'Ocurrió un error al procesar tu solicitud. Intenta nuevamente.';
       setError(mensajeError);
 
-      // DETECTAMOS SI EL ERROR ES POR FALTA DE VERIFICACIÓN
       if (mensajeError.toLowerCase().includes('verificar tu correo')) {
         setMostrarReenviar(true);
       }
@@ -114,7 +113,6 @@ export default function Login() {
     }
   };
 
-  // FUNCIÓN PARA REENVIAR EL CORREO
   const handleReenviarVerificacion = async () => {
     if (!correo) {
       setError("Por favor, ingresa tu correo institucional arriba.");
@@ -125,9 +123,9 @@ export default function Login() {
     setError('');
     
     try {
-      const response = await clienteApi.post('/Auth/reenviar-verificacion', { correo });
+      const response = await clienteApi.post('/Auth/reenviar-verificacion', { correo: correo.trim() });
       setSuccessMsg(response.data.mensaje || 'Enlace reenviado exitosamente.');
-      setMostrarReenviar(false); // Ocultamos el botón tras el éxito
+      setMostrarReenviar(false); 
     } catch (err) {
       setError(err.response?.data?.mensaje || 'Error al reenviar el correo. Intenta de nuevo.');
     } finally {
@@ -146,20 +144,27 @@ export default function Login() {
     setSuccessMsg('');
     setCaptchaToken(null);
     setPassword(''); 
-    setMostrarReenviar(false); // Limpiamos si cambia de vista
+    setMostrarReenviar(false);
   };
 
-  // Títulos dinámicos según la vista
   const renderTitle = () => {
     if (viewMode === 'login') return <>Acceso <span>Administrativo</span></>;
     if (viewMode === 'register') return <>Crear <span>Cuenta</span></>;
     if (viewMode === 'forgot') return <>Recuperar <span>Contraseña</span></>;
   };
 
+  // Función auxiliar para forzar solo números en la matrícula
+  const handleMatriculaChange = (e) => {
+    const valor = e.target.value;
+    // Solo actualiza si es vacío o si son solo números
+    if (valor === '' || /^[0-9\b]+$/.test(valor)) {
+      setMatricula(valor);
+    }
+  };
+
   return (
     <div className="split-layout-container">
       
-      {/* LADO IZQUIERDO: Branding */}
       <div className="split-left">
         <div className="left-overlay"></div>
         <div className="left-content fade-in-left">
@@ -171,7 +176,6 @@ export default function Login() {
         </div>
       </div>
 
-      {/* LADO DERECHO: Tarjeta Interactiva */}
       <div className="split-right">
         <div className="login-wrapper">
           
@@ -186,7 +190,6 @@ export default function Login() {
               )}
             </div>
 
-            {/* CAJA DE ERROR ACTUALIZADA CON EL BOTÓN DE REENVIAR */}
             {error && (
               <div className="error-message" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -217,14 +220,27 @@ export default function Login() {
 
             <form className="login-form" onSubmit={handleSubmit}>
               
-              {/* CAMPOS DE REGISTRO */}
               {viewMode === 'register' && (
                 <>
                   <div className="input-group slide-down">
                     <label htmlFor="matricula">Matrícula</label>
                     <div className="input-wrapper">
                       <Hash className="input-icon" size={20} />
-                      <input type="text" id="matricula" placeholder="Ej. 21300000" value={matricula} onChange={(e) => setMatricula(e.target.value)} required disabled={loading} />
+                      <input 
+                        type="text" 
+                        id="matricula" 
+                        placeholder="Ej. 2130000" 
+                        value={matricula} 
+                        onChange={handleMatriculaChange} 
+                        required 
+                        disabled={loading}
+                        maxLength={7}
+                        minLength={7}
+                        pattern="[0-9]{7}"
+                        title="La matrícula debe ser exactamente de 7 números"
+                      />
+                      {/* 👇 CONTADOR DE MATRÍCULA 👇 */}
+                      <span className="char-counter">{matricula.length}/7</span>
                     </div>
                   </div>
 
@@ -232,22 +248,43 @@ export default function Login() {
                     <label htmlFor="nombreCompleto">Nombre Completo</label>
                     <div className="input-wrapper">
                       <User className="input-icon" size={20} />
-                      <input type="text" id="nombreCompleto" placeholder="Juan Pérez" value={nombreCompleto} onChange={(e) => setNombreCompleto(e.target.value)} required disabled={loading} />
+                      <input 
+                        type="text" 
+                        id="nombreCompleto" 
+                        placeholder="Juan Pérez" 
+                        value={nombreCompleto} 
+                        onChange={(e) => setNombreCompleto(e.target.value)} 
+                        required 
+                        disabled={loading}
+                        maxLength={50}
+                      />
+                      {/* 👇 CONTADOR DE NOMBRE 👇 */}
+                      <span className="char-counter">{nombreCompleto.length}/50</span>
                     </div>
                   </div>
                 </>
               )}
 
-              {/* CORREO INSTITUCIONAL (Siempre visible) */}
               <div className="input-group">
                 <label htmlFor="correo">Correo Institucional</label>
                 <div className="input-wrapper">
                   <Mail className="input-icon" size={20} />
-                  <input type="email" id="correo" placeholder="admin@uttt.edu.mx" value={correo} onChange={(e) => setCorreo(e.target.value)} required disabled={loading} autoComplete="email" />
+                  <input 
+                    type="email" 
+                    id="correo" 
+                    placeholder="admin@uttt.edu.mx" 
+                    value={correo} 
+                    onChange={(e) => setCorreo(e.target.value)} 
+                    required 
+                    disabled={loading} 
+                    autoComplete="email"
+                    maxLength={50}
+                  />
+                  {/* 👇 CONTADOR DE CORREO 👇 */}
+                  <span className="char-counter">{correo.length}/50</span>
                 </div>
               </div>
 
-              {/* ROL DE USUARIO (Solo Registro) */}
               {viewMode === 'register' && (
                 <div className="input-group slide-down">
                   <label htmlFor="rol">Rol del Usuario</label>
@@ -263,7 +300,6 @@ export default function Login() {
                 </div>
               )}
 
-              {/* CONTRASEÑA (Visible en Login y Registro) */}
               {viewMode !== 'forgot' && (
                 <div className="input-group slide-down">
                   <label htmlFor="password">Contraseña</label>
@@ -278,12 +314,14 @@ export default function Login() {
                       required 
                       disabled={loading} 
                       autoComplete={viewMode === 'login' ? 'current-password' : 'new-password'}
+                      maxLength={20}
                     />
+                    {/* 👇 CONTADOR DE CONTRASEÑA 👇 */}
+                    <span className="char-counter">{password.length}/20</span>
                   </div>
                 </div>
               )}
 
-              {/* ENLACE "OLVIDÉ MI CONTRASEÑA" (Solo en Login) */}
               {viewMode === 'login' && (
                 <div className="forgot-password-container">
                   <button type="button" onClick={() => changeMode('forgot')} className="forgot-password-btn" disabled={loading}>
@@ -292,14 +330,12 @@ export default function Login() {
                 </div>
               )}
 
-              {/* RECAPTCHA */}
               {viewMode !== 'forgot' && (
                 <div className="recaptcha-container">
                   <ReCAPTCHA sitekey="6Lf9sp0sAAAAAD0slJXGNxAjM78U9u7x2WRow0Tf" onChange={onCaptchaChange} theme="light" />
                 </div>
               )}
 
-              {/* BOTÓN PRINCIPAL DINÁMICO */}
               <button type="submit" className="login-btn" disabled={loading || (!captchaToken && viewMode !== 'forgot') || enviandoCorreo}>
                 {loading ? (
                   <>
@@ -314,7 +350,6 @@ export default function Login() {
                 )}
               </button>
 
-              {/* ENLACES INFERIORES PARA CAMBIAR DE MODO */}
               <div className="toggle-mode-container">
                 <p>
                   {viewMode === 'login' ? '¿No tienes cuenta?' : '¿Ya tienes una cuenta?'}
