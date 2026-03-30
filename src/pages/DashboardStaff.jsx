@@ -62,7 +62,8 @@ export default function DashboardStaff() {
     } catch (error) {
       if (navigator.vibrate) navigator.vibrate(500);
 
-      const errorMsg = error.response?.data?.mensaje || error.response?.data?.error || "Código inválido o ya escaneado.";
+      // Aquí atrapará mágicamente el error "Este boleto ya fue escaneado" del backend
+      const errorMsg = error.response?.data?.mensaje || error.response?.data?.error || "Código inválido o error de conexión.";
       
       setResultado({ type: 'error', message: errorMsg, alumno: 'Acceso Denegado' });
       setHistorial(prev => [{ time: new Date(), status: 'error', text: 'QR Inválido o Duplicado' }, ...prev].slice(0, 5));
