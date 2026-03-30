@@ -41,11 +41,11 @@ export default function DashboardStaff() {
   }, [navigate]);
 
   const handleScan = async (textoQr) => {
-    // Protección 1: Validamos que haya leído algo real y no espacios vacíos
+    // Protección: Validamos que haya leído algo real
     const qrLimpio = textoQr?.trim();
     if (!scaneando || !qrLimpio) return;
 
-    setScaneando(false);
+    setScaneando(false); // Pausamos el escáner
     if (navigator.vibrate) navigator.vibrate(100);
 
     try {
@@ -71,7 +71,7 @@ export default function DashboardStaff() {
       setHistorial(prev => [{ time: new Date(), status: 'error', text: 'QR Inválido' }, ...prev].slice(0, 5));
     }
 
-    // Protección 2: Guardamos el timer para poder limpiarlo si es necesario
+    // Auto-reanudamos el escáner después de 2.5 segundos
     timerRef.current = setTimeout(() => {
       setResultado(null);
       setScaneando(true);
@@ -112,11 +112,17 @@ export default function DashboardStaff() {
           
           {scaneando ? (
             <>
-              {/* COMPONENTE DE ESCÁNER */}
+              {/* 👇 LA MAGIA: ACTUALIZADO AL NUEVO API DE LA LIBRERÍA 👇 */}
               <Scanner 
-                onResult={(text, result) => handleScan(text)}
+                onScan={(detectedCodes) => {
+                  // Extraemos el primer código que la cámara detecte del arreglo
+                  if (detectedCodes && detectedCodes.length > 0) {
+                    handleScan(detectedCodes[0].rawValue);
+                  }
+                }}
                 onError={(error) => console.log("Scanner Error:", error?.message)}
-                options={{ delayBetweenScanAttempts: 300 }}
+                paused={!scaneando} // Evita falsos escaneos dobles
+                scanDelay={300}
                 styles={{ container: { width: '100%', height: '100%' }, video: { objectFit: 'cover' } }}
               />
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '70%', height: '70%', border: '2px dashed rgba(255,255,255,0.5)', borderRadius: '16px', pointerEvents: 'none' }}></div>
