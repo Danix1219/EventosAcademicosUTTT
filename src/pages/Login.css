@@ -1,0 +1,415 @@
+/* src/pages/Login.css */
+
+/* =========================================
+   CONTENEDOR PRINCIPAL
+========================================= */
+.split-layout-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden; 
+  background-color: #f8fafc;
+}
+
+/* =========================================
+   LADO IZQUIERDO (Branding Oscuro)
+========================================= */
+.split-left {
+  position: relative;
+  flex: 1;
+  background-image: url('../assets/Gemini_Generated_Image_coouk6coouk6coou.png'); 
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.left-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 58, 138, 0.85) 100%);
+  z-index: 1;
+}
+
+.left-content {
+  position: relative;
+  z-index: 2;
+  max-width: 500px;
+  text-align: left;
+}
+
+.welcome-title {
+  color: #ffffff;
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 24px;
+  letter-spacing: -1px;
+}
+
+.welcome-title span {
+  color: #3b82f6;
+}
+
+.welcome-description {
+  color: #cbd5e1;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  margin-bottom: 48px;
+}
+
+.ut-soy-logo {
+  width: 100%;
+  max-width: 280px;
+  filter: drop-shadow(0px 10px 20px rgba(0, 0, 0, 0.5));
+  animation: floatLogo 4s ease-in-out infinite;
+}
+
+/* =========================================
+   LADO DERECHO (Login / Registro / Forgot)
+========================================= */
+.split-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f8fafc;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.login-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  padding-right: 250px; 
+}
+
+/* =========================================
+   TARJETA COMPACTA
+========================================= */
+.login-card {
+  margin-right: 8px;
+  position: relative;
+  z-index: 10;
+  background-color: #ffffff;
+  padding: 25px 35px;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  width: 100%;
+  min-width: 380px;
+  max-width: 420px;
+}
+
+/* HEADER */
+.login-header {
+  text-align: center;
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.brand-logo {
+  width: 75px;
+  margin-bottom: 8px;
+}
+
+.login-logo { 
+  font-size: 20px;
+  font-weight: 800;
+  color: #111827;
+  margin: 0;
+}
+
+.login-logo span {
+  color: #2563eb;
+}
+
+/* FORMULARIO */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4b5563;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  color: #9ca3af;
+  transition: color 0.3s;
+}
+
+/* INPUTS Y SELECTS */
+.input-wrapper input,
+.input-wrapper select.select-input {
+  width: 100%;
+  padding: 10px 14px 10px 40px;
+  background-color: #f1f5f9;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #1e293b;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.input-wrapper input:focus,
+.input-wrapper select.select-input:focus {
+  background-color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.input-wrapper select.select-input {
+  appearance: none;
+  cursor: pointer;
+}
+
+select.select-input.placeholder-color {
+  color: #9ca3af;
+}
+
+/* 👇 NUEVO: OLVIDÉ MI CONTRASEÑA 👇 */
+.forgot-password-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -6px;
+  margin-bottom: 4px;
+}
+
+.forgot-password-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.3s;
+}
+
+.forgot-password-btn:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+/* RECAPTCHA COMPACTO */
+.recaptcha-container {
+  display: flex;
+  justify-content: center;
+  margin-top: -4px;
+  margin-bottom: -4px;
+  transform: scale(0.85);
+  transform-origin: center;
+}
+
+/* BOTÓN PRINCIPAL */
+.login-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #111827;
+  color: #ffffff;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 2px;
+}
+
+.login-btn:hover:not(:disabled) {
+  background-color: #1e3a8a;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(30, 58, 138, 0.3);
+}
+
+.login-btn:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-icon {
+  margin-left: 8px;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+/* MENSAJES */
+.error-message {
+  background-color: #fef2f2;
+  color: #dc2626;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #fecaca;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.success-message {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #bbf7d0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* TOGGLE MODE */
+.toggle-mode-container {
+  text-align: center;
+  margin-top: 2px;
+}
+
+.toggle-mode-container p {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.toggle-mode-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font-size: 12px;
+  transition: color 0.3s;
+}
+
+.toggle-mode-btn:hover {
+  color: #1e3a8a;
+  text-decoration: underline;
+}
+
+/* =========================================
+   MASCOTA
+========================================= */
+.mascota-container {
+  position: absolute;
+  right: -10px; 
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  width: 280px;
+  z-index: 5;
+}
+
+.mascota-img {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(-10px 15px 25px rgba(0, 0, 0, 0.2));
+  animation: floatMascot 5s ease-in-out infinite; 
+}
+
+/* =========================================
+   ANIMACIONES Y KEYFRAMES
+========================================= */
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes mascotSlideIn {
+  0% { opacity: 0; transform: translateX(80px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes floatLogo {
+  0%, 100% { transform: rotate(-3deg) translateY(0); }
+  50% { transform: rotate(-3deg) translateY(-10px); }
+}
+
+@keyframes floatMascot {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+.fade-in-left { animation: fadeInLeft 0.8s ease-out forwards; }
+.fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards;
+  animation-delay: 0.3s;
+}
+.mascot-entrance {
+  opacity: 0;
+  animation: mascotSlideIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.6s both;
+}
+.slide-down { animation: slideDown 0.4s ease-out forwards; }
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+@media (max-width: 1024px) {
+  .login-wrapper { padding-right: 180px; }
+  .mascota-container { right: -40px; width: 200px; }
+  .login-card { min-width: 350px; }
+}
+
+@media (max-width: 850px) {
+  .split-layout-container { flex-direction: column; height: auto; overflow-y: auto; min-height: 100vh; }
+  .split-left { padding: 40px 20px; flex: none; min-height: 40vh; }
+  .welcome-title { font-size: 2.5rem; text-align: center; }
+  .welcome-description { text-align: center; }
+  .ut-soy-logo { margin: 0 auto; display: block; }
+  .mascota-container { display: none; }
+  .split-right { padding: 40px 20px; flex: none; }
+  .login-wrapper { padding-right: 0; justify-content: center; }
+  .login-card { min-width: 100%; max-width: 400px; margin-right: 0; padding: 25px 20px; }
+}
+
+@media (max-width: 400px) {
+  .welcome-title { font-size: 2rem; }
+  .login-card { padding: 20px 15px; }
+}

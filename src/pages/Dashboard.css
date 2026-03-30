@@ -1,0 +1,224 @@
+/* src/pages/Dashboard.css */
+
+.dashboard-layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f3f4f6;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* --- BARRA LATERAL (SIDEBAR) --- */
+.dashboard-sidebar {
+  width: 260px;
+  background-color: #111827;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
+  z-index: 20; /* Elevado para que quede por encima del contenido en móviles */
+  transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+  padding: 24px;
+  border-bottom: 1px solid #1f2937;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-logo {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.sidebar-logo span {
+  color: #3b82f6; 
+}
+
+/* Botón de cerrar menú (Oculto en desktop) */
+.close-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.close-menu-btn:hover {
+  color: #ffffff;
+}
+
+.sidebar-menu {
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.menu-item {
+  background: transparent;
+  color: #9ca3af;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.menu-item:hover {
+  background-color: #1f2937;
+  color: #ffffff;
+}
+
+.menu-item.active {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+/* --- ÁREA PRINCIPAL --- */
+.dashboard-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* --- BARRA SUPERIOR (HEADER) --- */
+.dashboard-header {
+  height: 70px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Botón hamburguesa (Oculto en desktop) */
+.menu-toggle-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #4b5563;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.logout-btn {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logout-btn:hover {
+  background-color: #fee2e2;
+}
+
+/* --- CONTENIDO --- */
+.dashboard-content {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+}
+
+/* Overlay para móviles (Fondo oscurecido) */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 15;
+  backdrop-filter: blur(2px);
+}
+
+/* =========================================
+   DISEÑO RESPONSIVO (Móviles y Tablets)
+========================================= */
+@media (max-width: 850px) {
+  /* La barra lateral flota sobre el contenido */
+  .dashboard-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%); /* Oculta por defecto */
+  }
+
+  /* Clase que se activa con React para mostrarla */
+  .dashboard-sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Mostramos los botones de control de menú */
+  .close-menu-btn,
+  .menu-toggle-btn {
+    display: block;
+  }
+
+  /* Mostramos el overlay cuando el menú está abierto */
+  .dashboard-sidebar.open ~ .sidebar-overlay,
+  .sidebar-overlay {
+    display: block;
+  }
+
+  /* Ajustes de espaciado en la cabecera para pantallas chicas */
+  .dashboard-header {
+    padding: 0 20px;
+  }
+
+  /* En móviles muy pequeños, ocultamos el texto "Cerrar Sesión" y dejamos solo el icono para ahorrar espacio */
+  .logout-text {
+    display: none;
+  }
+  
+  .logout-btn {
+    padding: 8px; /* Hace el botón cuadrado */
+  }
+
+  /* Reducimos el padding del contenido para aprovechar la pantalla */
+  .dashboard-content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-title {
+    font-size: 16px; /* Título un poco más pequeño */
+  }
+}

@@ -1,0 +1,21 @@
+/* En src/index.css (o tu archivo de estilos global) */
+
+/* 1. Apuntamos a los contenedores raíz del navegador */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  /* Importante: para que no haya desbordes */
+  overflow: hidden; 
+}
+
+body {
+  /* Aseguramos que la fuente base sea limpia */
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Definimos el fondo gris claro aquí también para seguridad */
+  background-color: #f3f4f6;
+  /* Ayuda a que el flexbox de adentro funcione mejor */
+  display: flex;
+  flex-direction: column;
+}
