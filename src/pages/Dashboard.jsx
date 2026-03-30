@@ -57,7 +57,7 @@ export default function Dashboard() {
       {/* 🚀 NUEVO: Añadimos la clase 'open' basada en el estado */}
       <aside className={`dashboard-sidebar ${menuAbierto ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <h2 className="sidebar-logo">Eventos <span>UTTT</span></h2>
+          <h2 className="sidebar-logo">Eventos <span style={{ color: '#10b981' }}>UTTT</span></h2>
           {/* 🚀 NUEVO: Botón para cerrar el menú en móviles */}
           <button className="close-menu-btn" onClick={() => setMenuAbierto(false)}>
             <X size={24} />
