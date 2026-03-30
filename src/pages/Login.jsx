@@ -295,7 +295,7 @@ export default function Login() {
               {/* RECAPTCHA */}
               {viewMode !== 'forgot' && (
                 <div className="recaptcha-container">
-                  <ReCAPTCHA sitekey="6LfyMp0sAAAAANIU6XHOWyrDWid12eSNvCMeKNyh" onChange={onCaptchaChange} theme="light" />
+                  <ReCAPTCHA sitekey="6Lf9sp0sAAAAAD0slJXGNxAjM78U9u7x2WRow0Tf" onChange={onCaptchaChange} theme="light" />
                 </div>
               )}
 
