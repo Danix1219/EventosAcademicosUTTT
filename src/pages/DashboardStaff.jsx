@@ -3,14 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { clienteApi } from '../api/clienteApi';
 import { jwtDecode } from 'jwt-decode';
 import { Scanner } from '@yudiel/react-qr-scanner';
-import { LogOut, CheckCircle2, AlertCircle, ScanLine, UserCheck, History } from 'lucide-react';
+import { LogOut, CheckCircle2, AlertCircle, ScanLine, History, Loader2 } from 'lucide-react';
 
 export default function DashboardStaff() {
   const navigate = useNavigate();
   
   const [nombreStaff, setNombreStaff] = useState('');
+  const [staffId, setStaffId] = useState(''); // 👈 NUEVO: Estado para guardar el ID del Staff
   const [scaneando, setScaneando] = useState(true);
-  const [resultado, setResultado] = useState(null); // { type: 'success' | 'error', message: '', alumno: '' }
+  const [resultado, setResultado] = useState(null); 
   const [historial, setHistorial] = useState([]);
 
   useEffect(() => {
@@ -22,7 +23,11 @@ export default function DashboardStaff() {
     try {
       const decoded = jwtDecode(token);
       const nombre = decoded.unique_name || decoded.name || decoded.NombreCompleto || 'Staff'; 
-      setNombreStaff(nombre.split(' ')[0]); // Solo el primer nombre
+      // 👈 NUEVO: Extraemos el ID del Staff desde el token
+      const id = decoded.nameid || decoded.sub || decoded.Id || decoded.nameidentifier; 
+      
+      setNombreStaff(nombre.split(' ')[0]); 
+      setStaffId(id); // Lo guardamos en el estado
     } catch (error) {
       navigate('/login');
     }
@@ -33,29 +38,24 @@ export default function DashboardStaff() {
     if (!scaneando) return;
 
     setScaneando(false); // Pausamos el escáner
-
-    // Hacemos vibrar el celular (si el navegador lo soporta)
     if (navigator.vibrate) navigator.vibrate(100);
 
     try {
-      // Llamamos a tu API de Asistencias (ajusta el nombre del campo según lo que espere tu DTO)
+      // 👇 CORRECCIÓN: Enviamos exactamente lo que pide Swagger 👇
       const response = await clienteApi.post('/Asistencias', {
-        codigoQr: textoQr
+        codigoQR: textoQr,
+        staffId: staffId 
       });
 
-      // Vibración de éxito: dos toques rápidos
       if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
       const mensajeExito = response.data.mensaje || 'Acceso concedido';
-      const alumno = response.data.nombreAlumno || 'Estudiante validado'; // Si tu API devuelve el nombre, mejor
+      const alumno = response.data.nombreAlumno || 'Estudiante validado'; 
 
       setResultado({ type: 'success', message: mensajeExito, alumno: alumno });
-      
-      // Agregamos al historial local
       setHistorial(prev => [{ time: new Date(), status: 'success', text: alumno }, ...prev].slice(0, 5));
 
     } catch (error) {
-      // Vibración de error: un toque largo
       if (navigator.vibrate) navigator.vibrate(500);
 
       const errorMsg = error.response?.data?.mensaje || error.response?.data?.error || "Código inválido o ya registrado.";
@@ -104,25 +104,23 @@ export default function DashboardStaff() {
           
           {scaneando ? (
             <>
+              {/* COMPONENTE DE ESCÁNER */}
               <Scanner 
                 onResult={(text, result) => handleScan(text)}
                 onError={(error) => console.log(error?.message)}
-                options={{
-                  delayBetweenScanAttempts: 300, // Escanea súper rápido
-                }}
+                options={{ delayBetweenScanAttempts: 300 }}
                 styles={{ container: { width: '100%', height: '100%' }, video: { objectFit: 'cover' } }}
               />
-              {/* Marco apuntador */}
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '70%', height: '70%', border: '2px dashed rgba(255,255,255,0.5)', borderRadius: '16px', pointerEvents: 'none' }}></div>
               <div style={{ position: 'absolute', bottom: '20px', left: '0', right: '0', textAlign: 'center', zIndex: 10 }}>
                 <span style={{ backgroundColor: 'rgba(0,0,0,0.6)', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', backdropFilter: 'blur(4px)' }}>Apuntando al QR...</span>
               </div>
             </>
           ) : (
-            // PANTALLA DE RESULTADO (Verde o Roja)
+            // PANTALLA DE RESULTADO
             <div style={{ 
               width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '20px', textAlign: 'center',
-              backgroundColor: resultado?.type === 'success' ? '#166534' : '#991b1b', // Verde o Rojo fuerte
+              backgroundColor: resultado?.type === 'success' ? '#166534' : '#991b1b',
               animation: 'fadeIn 0.2s ease-in'
             }}>
               {resultado?.type === 'success' ? <CheckCircle2 size={80} color="white" /> : <AlertCircle size={80} color="white" />}
@@ -146,7 +144,7 @@ export default function DashboardStaff() {
 
       </div>
 
-      {/* HISTORIAL RECIENTE (Opcional, muy útil para el staff) */}
+      {/* HISTORIAL RECIENTE */}
       <div style={{ backgroundColor: '#0f172a', borderTop: '1px solid #1e293b', padding: '20px', height: '200px', overflowY: 'auto' }}>
         <h4 style={{ margin: '0 0 15px 0', fontSize: '14px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
           <History size={16} /> Últimos Registros
