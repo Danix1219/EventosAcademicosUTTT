@@ -23,7 +23,7 @@ export default function GestionEventos() {
 
   // Estados para paginación
   const [paginaActual, setPaginaActual] = useState(1);
-  const eventosPorPagina = 10;
+  const eventosPorPagina = 5;
 
   useEffect(() => {
     cargarEventos();

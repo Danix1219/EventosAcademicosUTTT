@@ -27,7 +27,7 @@ export default function GestionTalleres() {
 
   // Paginación
   const [paginaActual, setPaginaActual] = useState(1);
-  const talleresPorPagina = 10;
+  const talleresPorPagina = 5;
 
   // 1. Al cargar la pantalla, traemos los eventos
   useEffect(() => {
