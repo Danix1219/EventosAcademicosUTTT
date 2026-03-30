@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { clienteApi } from '../api/clienteApi';
 import { jwtDecode } from 'jwt-decode';
@@ -9,10 +9,13 @@ export default function DashboardStaff() {
   const navigate = useNavigate();
   
   const [nombreStaff, setNombreStaff] = useState('');
-  const [staffId, setStaffId] = useState(''); // 👈 NUEVO: Estado para guardar el ID del Staff
+  const [staffId, setStaffId] = useState('');
   const [scaneando, setScaneando] = useState(true);
   const [resultado, setResultado] = useState(null); 
   const [historial, setHistorial] = useState([]);
+  
+  // Referencia para limpiar el timer si el componente se desmonta
+  const timerRef = useRef(null);
 
   useEffect(() => {
     const token = localStorage.getItem('userToken');
@@ -23,27 +26,31 @@ export default function DashboardStaff() {
     try {
       const decoded = jwtDecode(token);
       const nombre = decoded.unique_name || decoded.name || decoded.NombreCompleto || 'Staff'; 
-      // 👈 NUEVO: Extraemos el ID del Staff desde el token
       const id = decoded.nameid || decoded.sub || decoded.Id || decoded.nameidentifier; 
       
       setNombreStaff(nombre.split(' ')[0]); 
-      setStaffId(id); // Lo guardamos en el estado
+      setStaffId(id); 
     } catch (error) {
       navigate('/login');
     }
+
+    // Cleanup del timer al desmontar el componente
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, [navigate]);
 
   const handleScan = async (textoQr) => {
-    // Si ya estamos procesando un código, ignoramos nuevas lecturas
-    if (!scaneando) return;
+    // Protección 1: Validamos que haya leído algo real y no espacios vacíos
+    const qrLimpio = textoQr?.trim();
+    if (!scaneando || !qrLimpio) return;
 
-    setScaneando(false); // Pausamos el escáner
+    setScaneando(false);
     if (navigator.vibrate) navigator.vibrate(100);
 
     try {
-      // 👇 CORRECCIÓN: Enviamos exactamente lo que pide Swagger 👇
       const response = await clienteApi.post('/Asistencias', {
-        codigoQR: textoQr,
+        codigoQR: qrLimpio,
         staffId: staffId 
       });
 
@@ -58,20 +65,21 @@ export default function DashboardStaff() {
     } catch (error) {
       if (navigator.vibrate) navigator.vibrate(500);
 
-      const errorMsg = error.response?.data?.mensaje || error.response?.data?.error || "Código inválido o ya registrado.";
+      const errorMsg = error.response?.data?.mensaje || error.response?.data?.error || "Código inválido o ya escaneado.";
       
       setResultado({ type: 'error', message: errorMsg, alumno: 'Acceso Denegado' });
       setHistorial(prev => [{ time: new Date(), status: 'error', text: 'QR Inválido' }, ...prev].slice(0, 5));
     }
 
-    // Auto-reanudamos el escáner después de 2.5 segundos
-    setTimeout(() => {
+    // Protección 2: Guardamos el timer para poder limpiarlo si es necesario
+    timerRef.current = setTimeout(() => {
       setResultado(null);
       setScaneando(true);
     }, 2500);
   };
 
   const cerrarSesion = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
     localStorage.removeItem('userToken');
     localStorage.removeItem('userRol');
     navigate('/login');
@@ -107,7 +115,7 @@ export default function DashboardStaff() {
               {/* COMPONENTE DE ESCÁNER */}
               <Scanner 
                 onResult={(text, result) => handleScan(text)}
-                onError={(error) => console.log(error?.message)}
+                onError={(error) => console.log("Scanner Error:", error?.message)}
                 options={{ delayBetweenScanAttempts: 300 }}
                 styles={{ container: { width: '100%', height: '100%' }, video: { objectFit: 'cover' } }}
               />
