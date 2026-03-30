@@ -14,7 +14,6 @@ export default function DashboardStaff() {
   const [resultado, setResultado] = useState(null); 
   const [historial, setHistorial] = useState([]);
   
-  // Referencia para limpiar el timer si el componente se desmonta
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -34,18 +33,16 @@ export default function DashboardStaff() {
       navigate('/login');
     }
 
-    // Cleanup del timer al desmontar el componente
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, [navigate]);
 
   const handleScan = async (textoQr) => {
-    // Protección: Validamos que haya leído algo real
     const qrLimpio = textoQr?.trim();
     if (!scaneando || !qrLimpio) return;
 
-    setScaneando(false); // Pausamos el escáner
+    setScaneando(false); // Pausamos el escáner (pero no lo desmontamos)
     if (navigator.vibrate) navigator.vibrate(100);
 
     try {
@@ -65,13 +62,14 @@ export default function DashboardStaff() {
     } catch (error) {
       if (navigator.vibrate) navigator.vibrate(500);
 
-      const errorMsg = error.response?.data?.mensaje || error.response?.data?.error || "Código inválido o ya escaneado.";
+      // Aquí atrapará mágicamente el error "Este boleto ya fue escaneado" del backend
+      const errorMsg = error.response?.data?.mensaje || error.response?.data?.error || "Código inválido o error de conexión.";
       
       setResultado({ type: 'error', message: errorMsg, alumno: 'Acceso Denegado' });
-      setHistorial(prev => [{ time: new Date(), status: 'error', text: 'QR Inválido' }, ...prev].slice(0, 5));
+      setHistorial(prev => [{ time: new Date(), status: 'error', text: 'QR Inválido o Duplicado' }, ...prev].slice(0, 5));
     }
 
-    // Auto-reanudamos el escáner después de 2.5 segundos
+    // Auto-reanudamos el escáner
     timerRef.current = setTimeout(() => {
       setResultado(null);
       setScaneando(true);
@@ -107,43 +105,48 @@ export default function DashboardStaff() {
       {/* ÁREA DE LA CÁMARA */}
       <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
         
-        {/* VISOR DE LA CÁMARA */}
-        <div style={{ width: '100%', maxWidth: '400px', aspectRatio: '1/1', borderRadius: '24px', overflow: 'hidden', position: 'relative', border: '2px solid #334155', boxShadow: '0 0 40px rgba(0,0,0,0.5)' }}>
+        {/* CONTENEDOR DEL VISOR (Siempre Vivo) */}
+        <div style={{ width: '100%', maxWidth: '400px', aspectRatio: '1/1', borderRadius: '24px', overflow: 'hidden', position: 'relative', border: '2px solid #334155', boxShadow: '0 0 40px rgba(0,0,0,0.5)', backgroundColor: '#000' }}>
           
-          {scaneando ? (
+          {/* 1. LA CÁMARA: Ahora siempre está montada para no perder permisos, solo se pausa */}
+          <Scanner 
+            onScan={(detectedCodes) => {
+              if (detectedCodes && detectedCodes.length > 0) {
+                handleScan(detectedCodes[0].rawValue);
+              }
+            }}
+            onError={(error) => console.log("Scanner Error:", error?.message)}
+            paused={!scaneando} // Mantiene el stream vivo, pero ignora los códigos
+            scanDelay={300}
+            styles={{ container: { width: '100%', height: '100%' }, video: { objectFit: 'cover' } }}
+          />
+
+          {/* 2. GUIAS VISUALES: Solo se muestran cuando está activo */}
+          {scaneando && (
             <>
-              {/* 👇 LA MAGIA: ACTUALIZADO AL NUEVO API DE LA LIBRERÍA 👇 */}
-              <Scanner 
-                onScan={(detectedCodes) => {
-                  // Extraemos el primer código que la cámara detecte del arreglo
-                  if (detectedCodes && detectedCodes.length > 0) {
-                    handleScan(detectedCodes[0].rawValue);
-                  }
-                }}
-                onError={(error) => console.log("Scanner Error:", error?.message)}
-                paused={!scaneando} // Evita falsos escaneos dobles
-                scanDelay={300}
-                styles={{ container: { width: '100%', height: '100%' }, video: { objectFit: 'cover' } }}
-              />
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '70%', height: '70%', border: '2px dashed rgba(255,255,255,0.5)', borderRadius: '16px', pointerEvents: 'none' }}></div>
               <div style={{ position: 'absolute', bottom: '20px', left: '0', right: '0', textAlign: 'center', zIndex: 10 }}>
                 <span style={{ backgroundColor: 'rgba(0,0,0,0.6)', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', backdropFilter: 'blur(4px)' }}>Apuntando al QR...</span>
               </div>
             </>
-          ) : (
-            // PANTALLA DE RESULTADO
+          )}
+
+          {/* 3. CAPA DE RESULTADO: Aparece por encima de la cámara */}
+          {!scaneando && resultado && (
             <div style={{ 
-              width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '20px', textAlign: 'center',
-              backgroundColor: resultado?.type === 'success' ? '#166534' : '#991b1b',
-              animation: 'fadeIn 0.2s ease-in'
+              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50,
+              display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '20px', textAlign: 'center',
+              backgroundColor: resultado.type === 'success' ? 'rgba(22, 101, 52, 0.95)' : 'rgba(153, 27, 27, 0.95)', // Colores semi-transparentes
+              backdropFilter: 'blur(8px)',
+              animation: 'fadeIn 0.15s ease-out'
             }}>
-              {resultado?.type === 'success' ? <CheckCircle2 size={80} color="white" /> : <AlertCircle size={80} color="white" />}
+              {resultado.type === 'success' ? <CheckCircle2 size={80} color="white" /> : <AlertCircle size={80} color="white" />}
               
               <h3 style={{ margin: '15px 0 5px 0', fontSize: '24px', fontWeight: '800' }}>
-                {resultado?.type === 'success' ? '¡ACCESO OK!' : 'DENEGADO'}
+                {resultado.type === 'success' ? '¡ACCESO OK!' : 'DENEGADO'}
               </h3>
-              <p style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '600' }}>{resultado?.alumno}</p>
-              <p style={{ margin: 0, fontSize: '14px', opacity: 0.8 }}>{resultado?.message}</p>
+              <p style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '600' }}>{resultado.alumno}</p>
+              <p style={{ margin: 0, fontSize: '14px', opacity: 0.9 }}>{resultado.message}</p>
               
               <div style={{ marginTop: '30px' }}>
                 <Loader2 className="spinner" size={24} style={{ opacity: 0.5 }} />
@@ -153,7 +156,7 @@ export default function DashboardStaff() {
         </div>
         
         <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '14px', marginTop: '20px' }}>
-          La cámara se reactiva automáticamente.
+          La cámara se mantiene activa en segundo plano.
         </p>
 
       </div>
@@ -183,7 +186,7 @@ export default function DashboardStaff() {
 
       {/* Estilo para la animación de carga */}
       <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(1.05); } to { opacity: 1; transform: scale(1); } }
         .spinner { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
